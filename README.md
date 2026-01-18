@@ -7,7 +7,6 @@ A bash script to automate SSH key deployment and passwordless sudo configuration
 - **Automatic SSH Key Generation**: Creates ED25519 SSH keys if not present
 - **SSH Key Deployment**: Copies public keys to all configured servers
 - **Passwordless Sudo**: Configures NOPASSWD sudo access on remote hosts
-- **Auto-Root Login**: Automatically elevates to root on SSH connection
 - **SSH Aliases**: Creates convenient aliases for quick server access
 - **Smart Host Checking**: Validates network connectivity before attempting configuration
 
@@ -32,9 +31,14 @@ Required tools (must be installed):
    ```
 4. Connect to any server using the username alias:
    ```bash
-   tony      # Connects to stapp01 and auto-elevates to root
-   steve     # Connects to stapp02 and auto-elevates to root
-   natasha   # Connects to ststor01 and auto-elevates to root
+   tony      # Connects to stapp01
+   steve     # Connects to stapp02
+   natasha   # Connects to ststor01
+   ```
+5. Use `sudo` for any root commands (no password needed):
+   ```bash
+   sudo dnf install httpd
+   sudo systemctl start nginx
    ```
 
 ## Configured Servers
@@ -58,8 +62,15 @@ The script configures the following KodeKloud Engineer servers:
 1. **Host Reachability Check**: Tests TCP connectivity on port 22 before attempting configuration
 2. **SSH Key Deployment**: Uses `sshpass` to copy SSH public key to remote hosts
 3. **Sudo Configuration**: Creates `/etc/sudoers.d/` entries for passwordless sudo
-4. **Auto-Root Setup**: Modifies `.bashrc` to automatically elevate to root on login
-5. **Alias Creation**: Adds convenient SSH aliases to local `.bashrc`
+4. **Alias Creation**: Adds convenient SSH aliases to local `.bashrc`
+
+## Why No Auto-Root?
+
+The script configures **passwordless sudo** instead of auto-root elevation. This approach:
+- ✅ Preserves your user environment (SSH keys, git config, etc.)
+- ✅ Allows git operations and SSH agent forwarding to work properly
+- ✅ Follows security best practices (explicit privilege escalation)
+- ✅ Still lets you run root commands without passwords: `sudo <command>`
 
 ## Network-Level Host Checking
 
@@ -83,8 +94,7 @@ SERVERS=(
 
 ⚠️ **This script is designed for lab environments only**
 - Passwords are stored in plaintext in the script
-- Passwordless sudo grants full root access
-- Auto-root elevation happens on every login
+- Passwordless sudo grants full root access without passwords
 - Not suitable for production environments
 
 ## Troubleshooting
