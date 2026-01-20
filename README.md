@@ -7,6 +7,7 @@ A bash script to automate SSH key deployment and passwordless sudo configuration
 - **Automatic SSH Key Generation**: Creates ED25519 SSH keys if not present
 - **SSH Key Deployment**: Copies public keys to all configured servers
 - **Passwordless Sudo**: Configures NOPASSWD sudo access on remote hosts
+- **Auto-Root Login**: Automatically elevates to root on SSH connection (preserves environment)
 - **SSH Aliases**: Creates convenient aliases for quick server access
 - **Smart Host Checking**: Validates network connectivity before attempting configuration
 
@@ -31,14 +32,9 @@ Required tools (must be installed):
    ```
 4. Connect to any server using the username alias:
    ```bash
-   tony      # Connects to stapp01
-   steve     # Connects to stapp02
-   natasha   # Connects to ststor01
-   ```
-5. Use `sudo` for any root commands (no password needed):
-   ```bash
-   sudo dnf install httpd
-   sudo systemctl start nginx
+   tony      # Connects to stapp01 and auto-elevates to root
+   steve     # Connects to stapp02 and auto-elevates to root
+   natasha   # Connects to ststor01 and auto-elevates to root
    ```
 
 ## Configured Servers
@@ -62,15 +58,17 @@ The script configures the following KodeKloud Engineer servers:
 1. **Host Reachability Check**: Tests TCP connectivity on port 22 before attempting configuration
 2. **SSH Key Deployment**: Uses `sshpass` to copy SSH public key to remote hosts
 3. **Sudo Configuration**: Creates `/etc/sudoers.d/` entries for passwordless sudo
-4. **Alias Creation**: Adds convenient SSH aliases to local `.bashrc`
+4. **Auto-Root Setup**: Modifies `.bashrc` to automatically elevate to root on login using `sudo su` (preserves environment)
+5. **Alias Creation**: Adds convenient SSH aliases to local `.bashrc`
 
-## Why No Auto-Root?
+## Why `sudo su` instead of `sudo su -`?
 
-The script configures **passwordless sudo** instead of auto-root elevation. This approach:
-- ✅ Preserves your user environment (SSH keys, git config, etc.)
-- ✅ Allows git operations and SSH agent forwarding to work properly
-- ✅ Follows security best practices (explicit privilege escalation)
-- ✅ Still lets you run root commands without passwords: `sudo <command>`
+The script uses `sudo su` (without the dash) for auto-root elevation. This approach:
+- ✅ Elevates to root automatically on login
+- ✅ Preserves your user environment variables
+- ✅ Keeps SSH keys and git config accessible
+- ✅ Allows git operations to work properly
+- ✅ Better for KodeKloud labs that require git access
 
 ## Network-Level Host Checking
 
@@ -94,7 +92,8 @@ SERVERS=(
 
 ⚠️ **This script is designed for lab environments only**
 - Passwords are stored in plaintext in the script
-- Passwordless sudo grants full root access without passwords
+- Passwordless sudo grants full root access
+- Auto-root elevation happens on every login
 - Not suitable for production environments
 
 ## Troubleshooting

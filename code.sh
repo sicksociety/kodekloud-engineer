@@ -80,8 +80,8 @@ for ENTRY in "${SERVERS[@]}"; do
         -o ConnectTimeout=10 \
         "$USER@$FQDN" &>/dev/null || true
     
-    # Setup passwordless sudo
-    echo "⚡ Configuring passwordless sudo..."
+    # Setup passwordless sudo and auto-root
+    echo "⚡ Configuring passwordless sudo and auto-root..."
     
     # Create the remote script with proper variable substitution
     REMOTE_CMD=$(cat <<EOF
@@ -101,6 +101,20 @@ echo '$PASSWORD' | sudo -S visudo -c -f /etc/sudoers.d/$USER
 
 # Test passwordless sudo
 sudo -n whoami > /dev/null 2>&1 && echo "✓ Passwordless sudo verified"
+
+# Add auto-root to .bashrc if not already present
+if ! grep -q "exec sudo su" ~/.bashrc 2>/dev/null; then
+    cat >> ~/.bashrc <<'BASHRC_END'
+
+# Auto-elevate to root (added by automation script)
+if [ \$(id -u) -ne 0 ]; then
+    exec sudo su
+fi
+BASHRC_END
+    echo "✓ Auto-root added to .bashrc"
+else
+    echo "✓ Auto-root already in .bashrc"
+fi
 
 echo "Configuration complete for $USER"
 EOF
@@ -149,6 +163,7 @@ echo ""
 echo "📋 Summary:"
 echo "  ✓ SSH keys deployed"
 echo "  ✓ Passwordless sudo configured"
+echo "  ✓ Auto-root on login enabled"
 echo "  ✓ SSH aliases created"
 echo ""
 
@@ -175,12 +190,10 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "📖 USAGE EXAMPLES:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "   tony      # SSH to stapp01 (use 'sudo' for root commands)"
-echo "   steve     # SSH to stapp02 (use 'sudo' for root commands)"
-echo "   natasha   # SSH to ststor01 (use 'sudo' for root commands)"
-echo ""
-echo "   Example: tony → then run 'sudo dnf install httpd'"
+echo "   tony      # SSH to stapp01 and auto-elevate to root"
+echo "   steve     # SSH to stapp02 and auto-elevate to root"
+echo "   natasha   # SSH to ststor01 and auto-elevate to root"
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "💡 TIP: Passwordless sudo is configured, no password needed!"
+echo "💡 TIP: Using 'sudo su' to preserve environment for git access"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
