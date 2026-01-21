@@ -107,7 +107,8 @@ if ! grep -q "exec sudo su" ~/.bashrc 2>/dev/null; then
     cat >> ~/.bashrc <<'BASHRC_END'
 
 # Auto-elevate to root (added by automation script)
-if [ \$(id -u) -ne 0 ]; then
+# Only for interactive shells to avoid breaking scp/sftp/git
+if [ \$(id -u) -ne 0 ] && [[ \$- == *i* ]]; then
     exec sudo su
 fi
 BASHRC_END

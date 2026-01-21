@@ -64,11 +64,14 @@ The script configures the following KodeKloud Engineer servers:
 ## Why `sudo su` instead of `sudo su -`?
 
 The script uses `sudo su` (without the dash) for auto-root elevation. This approach:
-- ✅ Elevates to root automatically on login
+- ✅ Elevates to root automatically on login for **interactive sessions only**
 - ✅ Preserves your user environment variables
 - ✅ Keeps SSH keys and git config accessible
 - ✅ Allows git operations to work properly
+- ✅ **Does NOT break scp, sftp, or git over SSH** (only runs for interactive shells)
 - ✅ Better for KodeKloud labs that require git access
+
+The script checks `[[ $- == *i* ]]` to ensure auto-root only happens in interactive sessions, preventing issues with file transfers and git operations.
 
 ## Network-Level Host Checking
 
